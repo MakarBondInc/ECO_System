@@ -66,7 +66,7 @@ int main(void)
 
     pin_CSN(HIGH);        //Сигнал выбора
     pin_CE(LOW);
-    //Delay_ms(1000);
+    Delay_ms(1000);
     GPIOC->BSRR |= GPIO_BSRR_BR_13;
     while(1)
     {
