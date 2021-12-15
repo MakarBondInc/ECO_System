@@ -8,6 +8,7 @@
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
+#include "I2C.h"
 
 #define On 1
 #define Off 0
@@ -46,6 +47,7 @@ int main(void)
 
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
+    
 
     AXL_CS(HIGH);
     
@@ -62,6 +64,26 @@ int main(void)
     //init_USART1();      //Инициализация USART1 для связи с GSM
     init_USART2();      //Инициализация USART2 для связи с ПК
     init_SPI1();
+
+    GPIOB->BSRR |= GPIO_BSRR_BS_4;
+    GPIOB->BSRR |= GPIO_BSRR_BS_5;
+
+    UART2_send_string("\nReady!");
+    I2C_init();
+    //I2C_send_byte(0x01);
+    //I2C_send_byte(0x0F);
+    if((I2C1->ISR & I2C_ISR_TXE) == I2C_ISR_TXE)
+    {
+        I2C1->TXDR = 0x01;
+        I2C1->CR2 |= I2C_CR2_START;
+    }
+    I2C1->TXDR = 0x0F;
+    I2C1->CR2 |= I2C_CR2_START;
+
+    dataTranslate(I2C_read_byte());
+    UART2_send_string("\nOk!");
+
+    while(1){;}
 
     pin_CSN(HIGH);        //Сигнал выбора
     pin_CE(LOW);
