@@ -67,6 +67,8 @@ int main(void)
     pin_CSN(HIGH);        //Сигнал выбора
     pin_CE(LOW);
     Delay_ms(1000);
+    /*
+    Delay_ms(1000);
     GPIOC->BSRR |= GPIO_BSRR_BR_13;
     while(1)
     {
@@ -83,7 +85,7 @@ int main(void)
         UART2_send_byte(e_US + 0x30);
         Delay_ms(100);
     }
-    
+    */
     read_register_nRF24(CONFIG);
     UART2_send_string("\nCONFIG: ");
     send_to_PC(SPI_data_rx, 2);
