@@ -60,4 +60,6 @@ void GPIO_Init()
         GPIOB->MODER &=~ GPIO_MODER_MODE8;
         GPIOB->MODER |= GPIO_MODER_MODE8_0;
         GPIOB->OTYPER &=~ GPIO_OTYPER_OT_8;
+    //PA4 -- Analog ADC
+        GPIOA->MODER &=~ GPIO_MODER_MODE4;
 }
