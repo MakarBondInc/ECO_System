@@ -41,3 +41,11 @@ void UART2_send_string(char *stringUART2_TX)
         }
     }
 }
+void UART2_send_byte(uint32_t data)
+{
+    USART2->TDR = data;            //Загружаем байт в регистр данных UART
+    while(1)                                    //Бесконечный цикл (ждем флаг завершения отправки)
+    {
+        if(USART2->ISR & USART_ISR_TXE){break;} //Если отправка завершена, выходим из цикла
+    }
+}

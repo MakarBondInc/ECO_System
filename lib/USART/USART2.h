@@ -9,3 +9,4 @@ uint8_t i;
 
 void init_USART2(void);
 void UART2_send_string(char *stringUART2_TX);
+void UART2_send_byte(uint32_t data);

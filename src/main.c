@@ -8,6 +8,7 @@
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
+#include "RTC.h"
 
 #define On 1
 #define Off 0
@@ -24,26 +25,23 @@ uint8_t k;
 uint8_t y;
 uint8_t q;
 
-uint8_t SPI_data_sent;
 uint8_t IRQ_nRF;
-uint8_t data_SPI;
 uint8_t IRQ_Data_Ready_nRF24;
 uint8_t IRQ_Sent_Ready_nRF24;
 uint8_t IRQ_Maximum_number_of_TX;
-uint8_t impulse = 0;
 
 int main(void)
 {
-    SPI_data_ready = 0;
-    SPI_data_sent = 0;
     IRQ_Data_Ready_nRF24 = 0;
     IRQ_Sent_Ready_nRF24 = 0;
     IRQ_Maximum_number_of_TX = 0;
-    spi = 0;
     
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
+    RTC_Init();
+    LED_3(On);
+    
     AXL_CS(HIGH);
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
@@ -57,6 +55,21 @@ int main(void)
     //init_USART1();      //Инициализация USART1 для связи с GSM
     init_USART2();      //Инициализация USART2 для связи с ПК
     init_SPI1();
+
+    while(1)
+    {
+        RTC_Read_Time();
+        UART2_send_string("\n");
+        UART2_send_byte(HT + 0x30);
+        UART2_send_byte(HU + 0x30);
+        UART2_send_string(":");
+        UART2_send_byte(MNT + 0x30);
+        UART2_send_byte(MNU + 0x30);
+        UART2_send_string(":");
+        UART2_send_byte(ST + 0x30);
+        UART2_send_byte(SU + 0x30);
+        Delay_ms(500);
+    }
 
     pin_CSN(HIGH);        //Сигнал выбора
     pin_CE(LOW);
@@ -99,7 +112,7 @@ int main(void)
                 else{IRQ_Data_Ready_nRF24 = 0;}
 
                 temp = SPI_data_rx[0] & TX_DS; 
-                if(temp == TX_DS){IRQ_Sent_Ready_nRF24 = 1; UART2_send_string("\nОтправлено!"); write_register_nRF24(STATUS, SPI_data_rx[0]); NVIC_SystemReset();}
+                if(temp == TX_DS){IRQ_Sent_Ready_nRF24 = 1; UART2_send_string("\nОтправлено!"); write_register_nRF24(STATUS, SPI_data_rx[0]); LED_1(On); Delay_ms(100); LED_1(Off); NVIC_SystemReset();}
                 else{IRQ_Sent_Ready_nRF24 = 0;}
 
                 temp = SPI_data_rx[0] & MAX_RT; 
@@ -120,6 +133,13 @@ int main(void)
     {
         SysTick->CTRL &=~ SysTick_CTRL_ENABLE_Msk;     //Остановка системного таймера
     }
+
+    void NMI_Handler()
+    {
+        if((RCC->CSR & RCC_CSR_LSECSSON) == RCC_CSR_LSECSSON){LED_1(On);}
+        LED_2(On);
+    }
+
     void dataTranslate(uint8_t data)    //Копирование байта данных из SPI в UART
     {
         for(k = 0; k < 8; k++)
@@ -139,3 +159,4 @@ int main(void)
             dataTranslate(SPI_data_rx[y]);
         }
     }
+    
