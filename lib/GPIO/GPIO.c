@@ -51,13 +51,28 @@ void GPIO_Init()
         GPIOB->MODER |= GPIO_MODER_MODE14_0;
         GPIOB->OTYPER &=~ GPIO_OTYPER_OT_14;
         
-    //PC13 -- Signal 40 kHz
-        GPIOC->MODER &=~ GPIO_MODER_MODE13;
-        GPIOC->MODER |= GPIO_MODER_MODE13_0;
-        GPIOC->OTYPER &=~ GPIO_OTYPER_OT_13;
+    //PA8 -- En 4V
+        GPIOA->MODER &=~ GPIO_MODER_MODE8;
+        GPIOA->MODER |= GPIO_MODER_MODE8_0;
+        GPIOA->OTYPER &=~ GPIO_OTYPER_OT_8;
     
-    //PB8 -- transistor
-        GPIOB->MODER &=~ GPIO_MODER_MODE8;
-        GPIOB->MODER |= GPIO_MODER_MODE8_0;
-        GPIOB->OTYPER &=~ GPIO_OTYPER_OT_8;
+    //PB15 -- En 5V
+        GPIOB->MODER &=~ GPIO_MODER_MODE15;
+        GPIOB->MODER |= GPIO_MODER_MODE15_0;
+        GPIOB->OTYPER &=~ GPIO_OTYPER_OT_15;
+
+    //PA11 -- Led_1
+        GPIOA->MODER &=~ GPIO_MODER_MODE11;
+        GPIOA->MODER |= GPIO_MODER_MODE11_0;
+        GPIOA->OTYPER &=~ GPIO_OTYPER_OT_11;
+
+    //PA12 -- Led_2
+        GPIOA->MODER &=~ GPIO_MODER_MODE12;
+        GPIOA->MODER |= GPIO_MODER_MODE12_0;
+        GPIOA->OTYPER &=~ GPIO_OTYPER_OT_12;
+
+    //PB5 -- Led_3
+        GPIOB->MODER &=~ GPIO_MODER_MODE5;
+        GPIOB->MODER |= GPIO_MODER_MODE5_0;
+        GPIOB->OTYPER &=~ GPIO_OTYPER_OT_5;
 }

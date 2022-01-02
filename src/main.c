@@ -27,7 +27,6 @@ uint8_t q;
 uint8_t SPI_data_sent;
 uint8_t IRQ_nRF;
 uint8_t data_SPI;
-
 uint8_t IRQ_Data_Ready_nRF24;
 uint8_t IRQ_Sent_Ready_nRF24;
 uint8_t IRQ_Maximum_number_of_TX;
@@ -37,13 +36,11 @@ int main(void)
 {
     SPI_data_ready = 0;
     SPI_data_sent = 0;
-
     IRQ_Data_Ready_nRF24 = 0;
     IRQ_Sent_Ready_nRF24 = 0;
     IRQ_Maximum_number_of_TX = 0;
-
     spi = 0;
-
+    
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
@@ -54,8 +51,6 @@ int main(void)
 
     NVIC_EnableIRQ(SPI2_IRQn);
     NVIC_SetPriority(SPI2_IRQn, 1);
-        
-    //Debug();            //Добавление функций необходимых для отладки
 
     init_SysTick();     //Инициализация системного таймера
 
