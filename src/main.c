@@ -136,7 +136,6 @@ int main(void)
         UART2_send_byte((d_US - 10) + 0x30);
         UART2_send_byte(e_US + 0x30);
         Delay_ms(100);
-
     }
     
     read_register_nRF24(CONFIG);

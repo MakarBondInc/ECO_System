@@ -50,3 +50,4 @@ void HSE_16MHz(void)
     while(!((FLASH->ACR & FLASH_ACR_LATENCY) == FLASH_ACR_LATENCY)){;}   //Проверка цикла ожидания
     RCC->CFGR |= RCC_CFGR_SW_HSE;   //Перевод системы на тактирование от HSE
 }
+
