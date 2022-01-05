@@ -52,7 +52,7 @@ int main(void)
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
-    Power_US(Off);
+    Power_US(On);
 
     AXL_CS(HIGH);
     
@@ -71,7 +71,7 @@ int main(void)
     init_SPI1();
 
     pin_CSN(HIGH);        //Сигнал выбора
-
+    
     Delay_ms(1000);
     GPIOB->BSRR |= GPIO_BSRR_BR_6;
     while(1)
@@ -81,7 +81,7 @@ int main(void)
         
         LPUART1_read_string();
         //LED_1(On);
-        GPIOB->BSRR |= GPIO_BSRR_BS_6;
+        GPIOB->BSRR |= GPIO_BSRR_BR_6;
 
         d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
         e_US = convert_data_US(stringLPUART1_RX[3]);
