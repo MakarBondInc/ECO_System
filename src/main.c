@@ -4,7 +4,7 @@
 #include "GPIO.h"
 #include "Debug.h"
 #include "USART2.h"
-#include "USART1.h"
+#include "LPUSART1.h"
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
