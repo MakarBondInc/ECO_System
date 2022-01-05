@@ -52,7 +52,7 @@ int main(void)
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
-    Power_US(On);
+    Power_US(Off);
 
     AXL_CS(HIGH);
     
@@ -66,7 +66,7 @@ int main(void)
 
     init_SysTick();     //Инициализация системного таймера
 
-    //init_USART1();      //Инициализация USART1 для связи с GSM
+    init_LPUSART1();      //Инициализация USART1 для связи с GSM
     init_USART2();      //Инициализация USART2 для связи с ПК
     init_SPI1();
 
@@ -78,7 +78,9 @@ int main(void)
     {
         GPIOB->BSRR |= GPIO_BSRR_BS_6;
         Delay_ms(50);
+        
         LPUART1_read_string();
+        //LED_1(On);
         GPIOB->BSRR |= GPIO_BSRR_BS_6;
 
         d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
