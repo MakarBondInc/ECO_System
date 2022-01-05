@@ -61,6 +61,12 @@ void Connect_IN_4_ADC(void)
     ADC1->CHSELR |= ADC_CHSELR_CHSEL4;   //Подключение
 }
 
+void Connect_IN_9_ADC(void)
+{
+    ADC1->CHSELR &=~ ADC_CHSELR_CHSEL;
+    ADC1->CHSELR |= ADC_CHSELR_CHSEL9;   //Подключение
+}
+
 void En_ADC(void)
 {
     ADC1->ISR |= ADC_ISR_ADRDY;     //Сброс флага готовности АЦП.
@@ -87,6 +93,16 @@ uint32_t Read_IN4(void)
     Vr = Read_Vref();
     ADC1->CHSELR &=~ ADC_CHSELR_CHSEL;
     Connect_IN_4_ADC();
+    Vm = (Vr * Alone_convert_ADC()) / 4095;
+    return Vm;
+}
+
+uint32_t Read_IN9(void)
+{
+    Vm = 0;
+    Vr = Read_Vref();
+    ADC1->CHSELR &=~ ADC_CHSELR_CHSEL;
+    Connect_IN_9_ADC();
     Vm = (Vr * Alone_convert_ADC()) / 4095;
     return Vm;
 }

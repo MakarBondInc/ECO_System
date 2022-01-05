@@ -25,7 +25,9 @@ void En_ADC(void);
 uint32_t Read_Vref(void);
 uint32_t Read_Temper(void);
 void Connect_IN_4_ADC(void);
+void Connect_IN_9_ADC(void);
 uint32_t Read_IN4(void);
+uint32_t Read_IN9(void);
 /*
     *Доступные входы АЦП
         ADC_IN4 PA4 (Fast Channel)
