@@ -21,7 +21,8 @@
 void dataTranslate(uint8_t data);
 void send_to_PC(uint8_t *SPI_data_rx, uint8_t w);
 char convert_data_US(char data);
-void IK_read(void);
+uint8_t IK_read(void);
+uint8_t US_read(void);
 
 uint8_t curs;
 uint8_t temp;
@@ -59,6 +60,9 @@ int16_t res;
 char d_US;
 char e_US;
 
+uint8_t Data_US;
+uint8_t Data_IK;
+
 uint16_t table[131] = {2497, 2443, 2390, 2336, 2283, 2229, 2175, 2122, 2068, 2015, 
                         2043, 1971, 1904, 1841, 1782, 1726, 1674, 1624, 1578, 1533, 1491, 1452, 1414, 1378, 1344, 1311, 
                         1280, 1250, 1222, 1195, 1168, 1143, 1119, 1096, 1074, 1053, 1032, 1012, 993, 975, 957, 940, 923, 
@@ -83,80 +87,53 @@ int main(void)
     sum_1 = 0;
     ADC_tem = 0;
 
-    HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
-    GPIO_Init();
-
-    AXL_CS(HIGH);
-    Power_US(On);
-    Power_5V(On);
-
-    Power_US(Off);
-    Power_5V(Off);
-
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
 
     NVIC_EnableIRQ(ADC1_COMP_IRQn);
     NVIC_SetPriority(ADC1_COMP_IRQn, 1);
 
-    init_SysTick();     //Инициализация системного таймера
+    HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
+    GPIO_Init();
+    
+    AXL_CS(HIGH);
+    pin_CSN(HIGH);
+    GPIOB->BSRR |= GPIO_BSRR_BR_6;
 
-    init_LPUSART1();      //Инициализация USART1 для связи с GSM
-    init_USART2();      //Инициализация USART2 для связи с ПК
+    //Инициализация интерфейсов и переферии
+    init_SysTick();
+    init_LPUSART1();
+    init_USART2();
     init_SPI1();
-
-    pin_CSN(HIGH);        //Сигнал выбора
-    pin_CE(LOW);
-    Delay_ms(1000);
-
     Init_ADC();
     Calib_ADC();
     En_ADC();
     Connect_IN_9_ADC();
+    LED_1(On);
+    Delay_ms(50);
+    LED_1(Off);
+    //Включение питания сенсоров
+    Power_US(On);
+    Power_5V(On);
 
-    while(1)
-    {
-        IK_read();
-        Delay_ms(500);
-    }
+    TX_data_nRF24[0] = IK_read();
+    //TX_data_nRF24[1] = US_read();
+
+    //Выключение питания сенсоров
+    Power_US(Off);
+    Power_5V(Off);
+
+    pin_CE(LOW);
     Delay_ms(1000);
-    GPIOB->BSRR |= GPIO_BSRR_BR_6;
-    while(1)
-    {
-        GPIOB->BSRR |= GPIO_BSRR_BS_6;
-        Delay_ms(50);
-        LPUART1_read_string();
-        LED_1(On);
-        GPIOB->BSRR |= GPIO_BSRR_BR_6;
 
-        d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
-        e_US = convert_data_US(stringLPUART1_RX[3]);
+    //read_status_nRF24();
+    //UART2_send_string("\nSTATUS: ");
+    //send_to_PC(SPI_data_rx, 2);
 
-        UART2_send_string("\n");
-        UART2_send_byte((d_US - 10) + 0x30);
-        UART2_send_byte(e_US + 0x30);
-        Delay_ms(100);
-    }
-    
-    read_register_nRF24(CONFIG);
-    UART2_send_string("\nCONFIG: ");
-    send_to_PC(SPI_data_rx, 2);
     settings_TX_mode(0x78, 0x78, 0x78, 0x78, 0x78, 110);
-    read_register_nRF24(CONFIG);
-    UART2_send_string("\nCONFIG: ");
-    send_to_PC(SPI_data_rx, 2);
 
-    for(q = 0; q < 32; q++)
-    {
-        TX_data_nRF24[q] = 0b00110010;
-    }
-    write_payload_nRF24(TX_data_nRF24, 32);
-    //send_to_PC(SPI_data_rx, 32);
-/*
-    read_status_nRF24();
-    UART2_send_string("\nSTATUS: ");
-    send_to_PC(SPI_data_rx, 1);
-*/
+    write_payload_nRF24(TX_data_nRF24, 2);
+
     pin_CE(HIGH);
     Delay_us(50);
     pin_CE(LOW);
@@ -166,23 +143,17 @@ int main(void)
     {
         if(IRQ_nRF)
         {
-            //Debug_LED(On);
-            read_status_nRF24();
-            UART2_send_string("\nSTATUS: ");
-            send_to_PC(SPI_data_rx, 1);
-            //Delay_ms(10); 
+            temp = SPI_data_rx[0] & RX_DR; 
+            if(temp == RX_DR){IRQ_Data_Ready_nRF24 = 1; write_register_nRF24(STATUS, SPI_data_rx[0]);}
+            else{IRQ_Data_Ready_nRF24 = 0;}
 
-                temp = SPI_data_rx[0] & RX_DR; 
-                if(temp == RX_DR){IRQ_Data_Ready_nRF24 = 1; write_register_nRF24(STATUS, SPI_data_rx[0]);}
-                else{IRQ_Data_Ready_nRF24 = 0;}
+            temp = SPI_data_rx[0] & TX_DS; 
+            if(temp == TX_DS){IRQ_Sent_Ready_nRF24 = 1; UART2_send_string("\nОтправлено!"); write_register_nRF24(STATUS, SPI_data_rx[0]); LED_3(On); Delay_ms(50); LED_2(Off); NVIC_SystemReset();}
+            else{IRQ_Sent_Ready_nRF24 = 0;}
 
-                temp = SPI_data_rx[0] & TX_DS; 
-                if(temp == TX_DS){IRQ_Sent_Ready_nRF24 = 1; UART2_send_string("\nОтправлено!"); write_register_nRF24(STATUS, SPI_data_rx[0]); NVIC_SystemReset();}
-                else{IRQ_Sent_Ready_nRF24 = 0;}
-
-                temp = SPI_data_rx[0] & MAX_RT; 
-                if(temp == MAX_RT){IRQ_Maximum_number_of_TX = 1; UART2_send_string("\nПревышено число попыток!"); write_register_nRF24(STATUS, SPI_data_rx[0]); NVIC_SystemReset();}
-                else{IRQ_Maximum_number_of_TX = 0;}
+            temp = SPI_data_rx[0] & MAX_RT; 
+            if(temp == MAX_RT){IRQ_Maximum_number_of_TX = 1; UART2_send_string("\nПревышено число попыток!"); write_register_nRF24(STATUS, SPI_data_rx[0]); LED_3(On); Delay_ms(50); LED_3(Off); NVIC_SystemReset();}
+            else{IRQ_Maximum_number_of_TX = 0;}
 
             IRQ_nRF = 0;
         }
@@ -251,8 +222,9 @@ int main(void)
         UART2_send_byte(d_data);
         UART2_send_byte(e_data);
     }
-    void IK_read(void)
+    uint8_t IK_read(void)
     {
+        Data_IK = 0;
         mean = 0;
         for(i = 0; i < 5; i++)
         {
@@ -283,4 +255,21 @@ int main(void)
         UART2_send_string("\n");
         UART2_send_string("\n");
         Send_data_to_PC(p);
+        return Data_IK;
+    }
+    uint8_t US_read(void)
+    {
+        Data_IK = 0;
+        GPIOB->BSRR |= GPIO_BSRR_BS_6;
+        Delay_ms(50);
+        LPUART1_read_string();
+        GPIOB->BSRR |= GPIO_BSRR_BR_6;
+
+        d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
+        e_US = convert_data_US(stringLPUART1_RX[3]);
+
+        UART2_send_string("\n");
+        UART2_send_byte((d_US - 10) + 0x30);
+        UART2_send_byte(e_US + 0x30);
+        return Data_IK;
     }

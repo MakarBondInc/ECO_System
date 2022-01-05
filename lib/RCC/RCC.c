@@ -51,3 +51,24 @@ void HSE_16MHz(void)
     RCC->CFGR |= RCC_CFGR_SW_HSE;   //Перевод системы на тактирование от HSE
 }
 
+void Stop_mode(void)
+{
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;  //Разрешаем тактирование модуля PWR
+
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    PWR->CR &=~ PWR_CR_PDDS;
+    PWR->CSR &=~ PWR_CSR_WUF;   
+    RCC->CFGR &=~ RCC_CFGR_STOPWUCK;    //MSI в качестве резервного источника
+
+    RCC->CFGR &=~ RCC_CFGR_SW;   //Перевод системы на тактирование от MSI
+    RCC->CR &=~ RCC_CR_HSEON;        //Остановка генератора HSE
+    //RCC->CR &=~ RCC_CR_CSSHSEON;     //Остановка системы безопасности HSE
+    FLASH->ACR &=~ FLASH_ACR_LATENCY;    //Установка 0 цикла ожидания
+    while(!((FLASH->ACR & FLASH_ACR_LATENCY) == !FLASH_ACR_LATENCY)){;}   //Проверка цикла ожидания
+    /*
+    while((PWR->CSR & PWR_CSR_VOSF) == PWR_CSR_VOSF){;}
+    PWR->CR |= PWR_CR_VOS_0;
+    while((PWR->CSR & PWR_CSR_VOSF) == PWR_CSR_VOSF){;}
+    */
+    __ASM("WFI");
+}
