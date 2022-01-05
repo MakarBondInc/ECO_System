@@ -8,6 +8,7 @@
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
+#include "Power.h"
 
 #define On 1
 #define Off 0
