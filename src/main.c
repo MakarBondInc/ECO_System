@@ -112,25 +112,30 @@ int main(void)
     LED_1(On);
     Delay_ms(50);
     LED_1(Off);
+
     //Включение питания сенсоров
     Power_US(On);
     Power_5V(On);
-
+    Delay_ms(100);
     TX_data_nRF24[0] = IK_read();
     //TX_data_nRF24[1] = US_read();
 
     //Выключение питания сенсоров
-    Power_US(Off);
-    Power_5V(Off);
+    //Power_US(Off);
+    //Power_5V(Off);
 
     pin_CE(LOW);
     Delay_ms(1000);
 
-    //read_status_nRF24();
-    //UART2_send_string("\nSTATUS: ");
-    //send_to_PC(SPI_data_rx, 2);
+    read_status_nRF24();
+    UART2_send_string("\nSTATUS: ");
+    send_to_PC(SPI_data_rx, 2);
 
     settings_TX_mode(0x78, 0x78, 0x78, 0x78, 0x78, 110);
+
+    read_status_nRF24();
+    UART2_send_string("\nSTATUS: ");
+    send_to_PC(SPI_data_rx, 2);
 
     write_payload_nRF24(TX_data_nRF24, 2);
 
