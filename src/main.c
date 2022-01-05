@@ -48,6 +48,8 @@ int main(void)
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
+    Power_US(On);
+    while(1){;}
     AXL_CS(HIGH);
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
