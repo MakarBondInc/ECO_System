@@ -43,8 +43,10 @@ void MCO_OUT(void)
 
 void HSE_16MHz(void)
 {
-    RCC->CR |= RCC_CR_CSSHSEON;     //Запуск системы безопасности HSE
-    RCC->CR |= RCC_CR_HSEON;        //Запуск генератора HSI
+    RCC->CR |= RCC_CR_HSEON;        //Запуск генератора HSE
     while(!((RCC->CR & RCC_CR_HSERDY) == RCC_CR_HSERDY)){;}   //Проверка запуска HSE
-    RCC->CFGR |= RCC_CFGR_SW_HSE;
+    RCC->CR |= RCC_CR_CSSHSEON;     //Запуск системы безопасности HSE
+    FLASH->ACR |= FLASH_ACR_LATENCY;    //Установка 1 цикла ожидания
+    while(!((FLASH->ACR & FLASH_ACR_LATENCY) == FLASH_ACR_LATENCY)){;}   //Проверка цикла ожидания
+    RCC->CFGR |= RCC_CFGR_SW_HSE;   //Перевод системы на тактирование от HSE
 }

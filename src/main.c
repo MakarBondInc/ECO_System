@@ -58,9 +58,6 @@ int main(void)
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
-
-    NVIC_EnableIRQ(SPI2_IRQn);
-    NVIC_SetPriority(SPI2_IRQn, 1);
         
     //Debug();            //Добавление функций необходимых для отладки
 
@@ -73,11 +70,13 @@ int main(void)
     pin_CSN(HIGH);        //Сигнал выбора
     
     Delay_ms(1000);
+    send_string_LPUART1("Mak");
+    
     GPIOB->BSRR |= GPIO_BSRR_BR_6;
     while(1)
     {
         GPIOB->BSRR |= GPIO_BSRR_BS_6;
-        Delay_ms(50);
+        Delay_ms(10);
         
         LPUART1_read_string();
         LED_1(On);

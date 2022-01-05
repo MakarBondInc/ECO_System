@@ -2,8 +2,8 @@
 
 void init_LPUSART1(void)
 {
-    RCC->APB1ENR |= RCC_APB1ENR_LPUART1EN;       //Разрешение тактирования интерфейса USART1
-    LPUART1->BRR = 426666;           //Предделитель       
+    RCC->APB1ENR |= RCC_APB1ENR_LPUART1EN;       //Разрешение тактирования интерфейса LPUSART1
+    LPUART1->BRR = 426666;           //Предделитель
     //USART1->CR1 |= USART_CR1_RXNEIE;           //Разрешение прерывания (прием)
     //USART1->CR3 |= USART_CR3_DMAT;             //Разрешение на прием данных от DMA.
     //LPUART1->CR1 |= USART_CR1_OVER8_Msk;         //Одна посылка - 8 бит
