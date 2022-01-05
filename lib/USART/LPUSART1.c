@@ -44,7 +44,7 @@ void send_string_LPUART1(char *stringLPUART1_TX)
 
 void LPUART1_read_string(void)
 {
-    for(j = 0; j < 20; j++)
+    for(j = 0; j < 25; j++)
     {
         stringLPUART1_RX[j] = 0;
     }
@@ -60,3 +60,14 @@ void LPUART1_read_string(void)
         j++; 
     }
 }
+/*
+50 61 72 6B 53 6F 6E 61 72 2D 45 5A 2D 37 32 0D 
+50 4E 3A 4D 42 31 30 30 31 0D 
+43 6F 70 79 72 69 67 68 74 20 32 30 31 34 2D 32 30 31 34 0D 
+4D 61 78 42 6F 74 69 78 20 49 6E 63 2E 0D 
+96 52 6F 48 53 20 31 2E 30 30 33 39 64 20 31 31 31 34 0D 
+52 30 32 35 20 50 30 0D 
+52 30 32 35 20 50 30 0D 
+52 30 32 35 20 50 30 0D 
+52 30 32 35 20 50 30 0D
+*/

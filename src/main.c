@@ -80,7 +80,7 @@ int main(void)
         Delay_ms(50);
         
         LPUART1_read_string();
-        //LED_1(On);
+        LED_1(On);
         GPIOB->BSRR |= GPIO_BSRR_BR_6;
 
         d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
