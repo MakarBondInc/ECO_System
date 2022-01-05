@@ -51,11 +51,11 @@ void LPUART1_read_string(void)
     j = 0;                                            //Сброс счетчика
     while(1)                                          //Цикл, пока элемент массива не 0.
     {
+        LPUART1->ICR |= USART_ICR_ORECF;
         while(1)                                      //Бесконечный цикл (ждем флаг завершения отправки)
         {
-            if(LPUART1->ISR & USART_ISR_RXNE){break;} //
+            if((LPUART1->ISR & USART_ISR_RXNE) == USART_ISR_RXNE){stringLPUART1_RX[j] = LPUART1->RDR; break;} //
         }
-        stringLPUART1_RX[j] = LPUART1->RDR;
         if(stringLPUART1_RX[j] == 0x0D){break;}
         j++; 
     }

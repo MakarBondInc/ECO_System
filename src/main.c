@@ -8,14 +8,12 @@
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
-#include "Power.h"
 
 #define On 1
 #define Off 0
 #define HIGH 1
 #define LOW 0
 
-//char data[8];
 void dataTranslate(uint8_t data);
 void send_to_PC(uint8_t *SPI_data_rx, uint8_t w);
 char convert_data_US(char data);
@@ -52,14 +50,13 @@ int main(void)
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
 
-    Power_US(On);
-
     AXL_CS(HIGH);
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
-        
-    //Debug();            //Добавление функций необходимых для отладки
+
+    NVIC_EnableIRQ(SPI2_IRQn);
+    NVIC_SetPriority(SPI2_IRQn, 1);
 
     init_SysTick();     //Инициализация системного таймера
 
@@ -68,16 +65,15 @@ int main(void)
     init_SPI1();
 
     pin_CSN(HIGH);        //Сигнал выбора
+    pin_CE(LOW);
+    Delay_ms(1000);
     
     Delay_ms(1000);
-    send_string_LPUART1("Mak");
-    
     GPIOB->BSRR |= GPIO_BSRR_BR_6;
     while(1)
     {
         GPIOB->BSRR |= GPIO_BSRR_BS_6;
-        Delay_ms(10);
-        
+        Delay_ms(50);
         LPUART1_read_string();
         LED_1(On);
         GPIOB->BSRR |= GPIO_BSRR_BR_6;
@@ -89,11 +85,9 @@ int main(void)
         UART2_send_byte((d_US - 10) + 0x30);
         UART2_send_byte(e_US + 0x30);
         Delay_ms(100);
+
     }
-
-    pin_CE(LOW);
-    Delay_ms(1000);
-
+    
     read_register_nRF24(CONFIG);
     UART2_send_string("\nCONFIG: ");
     send_to_PC(SPI_data_rx, 2);
@@ -122,9 +116,11 @@ int main(void)
     {
         if(IRQ_nRF)
         {
+            //Debug_LED(On);
             read_status_nRF24();
             UART2_send_string("\nSTATUS: ");
             send_to_PC(SPI_data_rx, 1);
+            //Delay_ms(10); 
 
                 temp = SPI_data_rx[0] & RX_DR; 
                 if(temp == RX_DR){IRQ_Data_Ready_nRF24 = 1; write_register_nRF24(STATUS, SPI_data_rx[0]);}
