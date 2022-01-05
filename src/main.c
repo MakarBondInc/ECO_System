@@ -73,13 +73,13 @@ int main(void)
     pin_CSN(HIGH);        //Сигнал выбора
 
     Delay_ms(1000);
-    GPIOC->BSRR |= GPIO_BSRR_BR_13;
+    GPIOB->BSRR |= GPIO_BSRR_BR_6;
     while(1)
     {
-        GPIOC->BSRR |= GPIO_BSRR_BS_13;
+        GPIOB->BSRR |= GPIO_BSRR_BS_6;
         Delay_ms(50);
         LPUART1_read_string();
-        GPIOC->BSRR |= GPIO_BSRR_BR_13;
+        GPIOB->BSRR |= GPIO_BSRR_BS_6;
 
         d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
         e_US = convert_data_US(stringLPUART1_RX[3]);

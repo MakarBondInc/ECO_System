@@ -70,4 +70,9 @@ void GPIO_Init()
         GPIOB->MODER &=~ GPIO_MODER_MODE5;
         GPIOB->MODER |= GPIO_MODER_MODE5_0;
         GPIOB->OTYPER &=~ GPIO_OTYPER_OT_5;
+
+    //PB6 -- US_RX
+        GPIOB->MODER &=~ GPIO_MODER_MODE6;
+        GPIOB->MODER |= GPIO_MODER_MODE6_0;
+        GPIOB->OTYPER &=~ GPIO_OTYPER_OT_6;
 }
