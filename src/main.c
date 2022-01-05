@@ -35,14 +35,30 @@ int main(void)
     IRQ_Data_Ready_nRF24 = 0;
     IRQ_Sent_Ready_nRF24 = 0;
     IRQ_Maximum_number_of_TX = 0;
-    
-    HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
+    HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
+    init_SPI1();
+    PWR_UP(Off);
+    Stop_mode();
 
+    init_SysTick();     //Инициализация системного таймера
+    init_USART2();      //Инициализация USART2 для связи с ПК
+    //Delay_ms(1000);
+    
+
+        //AXL_CS(HIGH);
+        //read_status_AXL();
+        //send_to_PC(SPI_data_rx, 1);
+
+    
+    LED_3(On);
+    __ASM("NOP");
+    while(1){;}
+    
     RTC_Init();
     LED_3(On);
     
-    AXL_CS(HIGH);
+    
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
@@ -50,11 +66,11 @@ int main(void)
     NVIC_EnableIRQ(SPI2_IRQn);
     NVIC_SetPriority(SPI2_IRQn, 1);
 
-    init_SysTick();     //Инициализация системного таймера
+    
 
     //init_USART1();      //Инициализация USART1 для связи с GSM
-    init_USART2();      //Инициализация USART2 для связи с ПК
-    init_SPI1();
+    
+    
 
     while(1)
     {

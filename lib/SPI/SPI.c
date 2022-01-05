@@ -10,6 +10,10 @@ void init_SPI1(void)
     //SPI2->CR2 |= SPI_CR2_RXNEIE;            //Разрешение прерывания по приему данных
     //SPI2->CR1 |= SPI_CR1_LSBFIRST;           //Последовательность бит LSB
 
+    //!Для акселерометра
+    //SPI1->CR1 |= SPI_CR1_CPOL;  //Для AXL
+    //SPI1->CR1 |= SPI_CR1_CPHA;  //Для AXL
+
     SPI1->CR1 |= SPI_CR1_SSM;
     SPI1->CR1 |= SPI_CR1_SSI;
 
