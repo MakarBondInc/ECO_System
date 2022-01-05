@@ -35,6 +35,9 @@ uint8_t IRQ_Sent_Ready_nRF24;
 uint8_t IRQ_Maximum_number_of_TX;
 uint8_t impulse = 0;
 
+char d_US;
+char e_US;
+
 int main(void)
 {
     SPI_data_ready = 0;
@@ -50,7 +53,7 @@ int main(void)
     GPIO_Init();
 
     Power_US(On);
-    while(1){;}
+
     AXL_CS(HIGH);
     
     NVIC_EnableIRQ(EXTI0_1_IRQn);
@@ -68,6 +71,25 @@ int main(void)
     init_SPI1();
 
     pin_CSN(HIGH);        //Сигнал выбора
+
+    Delay_ms(1000);
+    GPIOC->BSRR |= GPIO_BSRR_BR_13;
+    while(1)
+    {
+        GPIOC->BSRR |= GPIO_BSRR_BS_13;
+        Delay_ms(50);
+        LPUART1_read_string();
+        GPIOC->BSRR |= GPIO_BSRR_BR_13;
+
+        d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
+        e_US = convert_data_US(stringLPUART1_RX[3]);
+
+        UART2_send_string("\n");
+        UART2_send_byte((d_US - 10) + 0x30);
+        UART2_send_byte(e_US + 0x30);
+        Delay_ms(100);
+    }
+
     pin_CE(LOW);
     Delay_ms(1000);
 
