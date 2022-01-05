@@ -8,6 +8,7 @@
 #include "nRF.h"
 #include "SPI.h"
 #include "AXL.h"
+#include "ADC.h"
 
 #define On 1
 #define Off 0
@@ -36,6 +37,8 @@ uint8_t impulse = 0;
 char d_US;
 char e_US;
 
+
+
 int main(void)
 {
     SPI_data_ready = 0;
@@ -58,6 +61,9 @@ int main(void)
     NVIC_EnableIRQ(SPI2_IRQn);
     NVIC_SetPriority(SPI2_IRQn, 1);
 
+    NVIC_EnableIRQ(ADC1_COMP_IRQn);
+    NVIC_SetPriority(ADC1_COMP_IRQn, 1);
+
     init_SysTick();     //Инициализация системного таймера
 
     init_LPUSART1();      //Инициализация USART1 для связи с GSM
@@ -67,7 +73,11 @@ int main(void)
     pin_CSN(HIGH);        //Сигнал выбора
     pin_CE(LOW);
     Delay_ms(1000);
-    
+
+    Init_ADC();
+    Calib_ADC();
+    En_ADC();
+
     Delay_ms(1000);
     GPIOB->BSRR |= GPIO_BSRR_BR_6;
     while(1)
@@ -148,6 +158,12 @@ int main(void)
     {
         SysTick->CTRL &=~ SysTick_CTRL_ENABLE_Msk;     //Остановка системного таймера
     }
+    void ADC1_COMP_IRQHandler()
+    {
+        if(ADC1->ISR & ADC_ISR_EOCAL){ADC1->ISR |= ADC_ISR_EOCAL; F_EOCAL = true;}
+        if(ADC1->ISR & ADC_ISR_ADRDY){ADC1->ISR |= ADC_ISR_ADRDY; F_ADRDY = true;}
+        if(ADC1->ISR & ADC_ISR_EOC){ADC_data = ADC1->DR; F_Data = true;}
+    }
     void dataTranslate(uint8_t data)    //Копирование байта данных из SPI в UART
     {
         for(k = 0; k < 8; k++)
@@ -181,4 +197,52 @@ int main(void)
         if(data == 0x38){rez = 8;}
         if(data == 0x39){rez = 9;}
         return rez;
+    }
+    void Send_data_to_PC(uint32_t data)
+    {
+        dt_data = (data / 10000) + 0x30;
+        t_data = ((data % 10000) / 1000) + 0x30;
+        s_data = ((data % 1000) / 100) + 0x30;
+        d_data = ((data % 100) / 10) + 0x30;
+        e_data = (data % 10) + 0x30;
+        UART2_send_byte(dt_data);
+        UART2_send_byte(t_data);
+        UART2_send_byte(s_data);
+        UART2_send_byte(d_data);
+        UART2_send_byte(e_data);
+    }
+    void IK_read(void)
+    {
+        mean = 0;
+            for(i = 0; i < 5; i++)
+            {
+                mean = mean + Read_IN4();
+            }
+            mean = mean / i;
+
+            if(mean < 2497 && mean > 330)
+            {
+                for(i = 0; i < 131; i++)
+                {
+                    sum_0 = table[i] - mean;
+                    if(sum_0 > 0)
+                    {
+                        sum_1 = sum_0;
+                    }
+                    if(sum_0 < 0)
+                    {
+                        sum_0 = sum_0 * (-1);
+                        if(sum_0 < sum_1){p = i;break;}
+                        else{p = i - 1; break;}
+                    }
+                }
+                p = p + 20;
+            }
+            else{p = 0;}
+
+            UART2_send_string("\n");
+            UART2_send_string("\n");
+            Send_data_to_PC(p);
+            //Send_data_to_PC(mean);
+            Delay_ms(500);
     }
