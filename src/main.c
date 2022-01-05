@@ -18,6 +18,7 @@
 //char data[8];
 void dataTranslate(uint8_t data);
 void send_to_PC(uint8_t *SPI_data_rx, uint8_t w);
+char convert_data_US(char data);
 
 uint8_t curs;
 uint8_t temp;
@@ -146,4 +147,19 @@ int main(void)
         {
             dataTranslate(SPI_data_rx[y]);
         }
+    }
+    char convert_data_US(char data)
+    {
+        char rez;
+        if(data == 0x30){rez = 0;}
+        if(data == 0x31){rez = 1;}
+        if(data == 0x32){rez = 2;}
+        if(data == 0x33){rez = 3;}
+        if(data == 0x34){rez = 4;}
+        if(data == 0x35){rez = 5;}
+        if(data == 0x36){rez = 6;}
+        if(data == 0x37){rez = 7;}
+        if(data == 0x38){rez = 8;}
+        if(data == 0x39){rez = 9;}
+        return rez;
     }
