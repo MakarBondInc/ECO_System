@@ -23,6 +23,7 @@ void send_to_PC(uint8_t *SPI_data_rx, uint8_t w);
 char convert_data_US(char data);
 uint8_t IK_read(void);
 uint8_t US_read(void);
+void Wait_US(void);
 
 uint8_t curs;
 uint8_t temp;
@@ -30,6 +31,9 @@ uint8_t k;
 uint8_t y;
 uint8_t q;
 uint8_t p;
+
+uint8_t first_byte;
+uint8_t string_good;
 
 uint8_t SPI_data_sent;
 uint8_t IRQ_nRF;
@@ -87,11 +91,17 @@ int main(void)
     sum_1 = 0;
     ADC_tem = 0;
 
+    first_byte = true;
+    string_good = false;
+
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
 
     NVIC_EnableIRQ(ADC1_COMP_IRQn);
     NVIC_SetPriority(ADC1_COMP_IRQn, 1);
+
+    NVIC_EnableIRQ(LPUART1_IRQn);
+    NVIC_SetPriority(LPUART1_IRQn, 1);
 
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
@@ -116,9 +126,11 @@ int main(void)
     //Включение питания сенсоров
     Power_US(On);
     Power_5V(On);
-    Delay_ms(100);
+    while (1){;}
+    Wait_US();
+
     TX_data_nRF24[0] = IK_read();
-    //TX_data_nRF24[1] = US_read();
+    TX_data_nRF24[1] = US_read();
 
     //Выключение питания сенсоров
     //Power_US(Off);
@@ -179,6 +191,20 @@ int main(void)
         if(ADC1->ISR & ADC_ISR_EOCAL){ADC1->ISR |= ADC_ISR_EOCAL; F_EOCAL = true;}
         if(ADC1->ISR & ADC_ISR_ADRDY){ADC1->ISR |= ADC_ISR_ADRDY; F_ADRDY = true;}
         if(ADC1->ISR & ADC_ISR_EOC){ADC_data = ADC1->DR; F_Data = true;}
+    }
+    void LPUART1_IRQHandler()
+    {
+        if(first_byte){j = 0; first_byte = false; string_good = false;}
+        else{j++;}
+        if((LPUART1->ISR & USART_ISR_RXNE) == USART_ISR_RXNE)
+        {
+            stringLPUART1_RX[j] = LPUART1->RDR;
+            if(stringLPUART1_RX[j] == 0x0D)
+            {
+                first_byte = true; 
+                string_good = true;
+            }
+        }
     }
     void dataTranslate(uint8_t data)    //Копирование байта данных из SPI в UART
     {
@@ -277,4 +303,12 @@ int main(void)
         UART2_send_byte((d_US - 10) + 0x30);
         UART2_send_byte(e_US + 0x30);
         return Data_IK;
+    }
+    void Wait_US(void)
+    {
+        for(i = 0; i < 6; i++)
+        {
+            __ASM("WFI");
+            if(stringLPUART1_RX[0] == 0x52){break;}
+        }
     }
