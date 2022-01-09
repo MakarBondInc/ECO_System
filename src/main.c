@@ -34,6 +34,7 @@ uint8_t p;
 
 uint8_t first_byte;
 uint8_t string_good;
+uint8_t good;
 
 uint8_t SPI_data_sent;
 uint8_t IRQ_nRF;
@@ -93,6 +94,7 @@ int main(void)
 
     first_byte = true;
     string_good = false;
+    good = false;
 
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_SetPriority(EXTI0_1_IRQn, 0);
@@ -105,6 +107,9 @@ int main(void)
 
     HSE_16MHz();    //Переключение тактировния на генератор HSE с частотой 16 МГц.
     GPIO_Init();
+    //Выключение питания сенсоров
+    Power_US(Off);
+    Power_5V(Off);
     
     AXL_CS(HIGH);
     pin_CSN(HIGH);
@@ -126,15 +131,15 @@ int main(void)
     //Включение питания сенсоров
     Power_US(On);
     Power_5V(On);
-    while (1){;}
-    Wait_US();
+    //Wait_US();
 
-    TX_data_nRF24[0] = IK_read();
-    TX_data_nRF24[1] = US_read();
+    //TX_data_nRF24[0] = US_read();
+    Delay_ms(100);
+    TX_data_nRF24[1] = IK_read();
 
     //Выключение питания сенсоров
-    //Power_US(Off);
-    //Power_5V(Off);
+    Power_US(Off);
+    Power_5V(Off);
 
     pin_CE(LOW);
     Delay_ms(1000);
@@ -156,11 +161,11 @@ int main(void)
     pin_CE(LOW);
     
     __ASM("WFI");
-    while (1)
+    while(1)
     {
         if(IRQ_nRF)
         {
-            temp = SPI_data_rx[0] & RX_DR; 
+            temp = SPI_data_rx[0] & RX_DR;
             if(temp == RX_DR){IRQ_Data_Ready_nRF24 = 1; write_register_nRF24(STATUS, SPI_data_rx[0]);}
             else{IRQ_Data_Ready_nRF24 = 0;}
 
@@ -194,7 +199,7 @@ int main(void)
     }
     void LPUART1_IRQHandler()
     {
-        if(first_byte){j = 0; first_byte = false; string_good = false;}
+        if(first_byte){j = 0; first_byte = false;}
         else{j++;}
         if((LPUART1->ISR & USART_ISR_RXNE) == USART_ISR_RXNE)
         {
@@ -292,9 +297,8 @@ int main(void)
     {
         Data_IK = 0;
         GPIOB->BSRR |= GPIO_BSRR_BS_6;
-        Delay_ms(50);
-        LPUART1_read_string();
-        GPIOB->BSRR |= GPIO_BSRR_BR_6;
+        while(!string_good){;}
+        if(stringLPUART1_RX[0] == 0x52){GPIOB->BSRR |= GPIO_BSRR_BR_6; string_good = false;}
 
         d_US = convert_data_US(stringLPUART1_RX[2]) + 10;
         e_US = convert_data_US(stringLPUART1_RX[3]);
@@ -306,9 +310,10 @@ int main(void)
     }
     void Wait_US(void)
     {
-        for(i = 0; i < 6; i++)
+        while(1)
         {
-            __ASM("WFI");
-            if(stringLPUART1_RX[0] == 0x52){break;}
+            while(!string_good){;}
+            if(stringLPUART1_RX[0] == 0x96){string_good = false; break;}
+            string_good = false;
         }
     }
