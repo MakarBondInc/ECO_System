@@ -66,7 +66,8 @@ int main(void)
     NVIC_EnableIRQ(SPI2_IRQn);
     NVIC_SetPriority(SPI2_IRQn, 1);
 
-    
+    NVIC_EnableIRQ(LPUART1_IRQn);
+    NVIC_SetPriority(LPUART1_IRQn, 1);
 
     //init_USART1();      //Инициализация USART1 для связи с GSM
     
@@ -175,4 +176,3 @@ int main(void)
             dataTranslate(SPI_data_rx[y]);
         }
     }
-    
