@@ -131,9 +131,9 @@ int main(void)
     //Включение питания сенсоров
     Power_US(On);
     Power_5V(On);
-    //Wait_US();
+    Wait_US();
 
-    //TX_data_nRF24[0] = US_read();
+    TX_data_nRF24[0] = US_read();
     Delay_ms(100);
     TX_data_nRF24[1] = IK_read();
 
