@@ -157,6 +157,21 @@ int main(void)
         LED_2(On);
     }
 
+    void LPUART1_IRQHandler()
+    {
+        if(first_byte){j = 0; first_byte = false;}
+        else{j++;}
+        if((LPUART1->ISR & USART_ISR_RXNE) == USART_ISR_RXNE)
+        {
+            stringLPUART1_RX[j] = LPUART1->RDR;
+            if(stringLPUART1_RX[j] == 0x0D)
+            {
+                first_byte = true; 
+                string_good = true;
+            }
+        }
+    }
+    
     void dataTranslate(uint8_t data)    //Копирование байта данных из SPI в UART
     {
         for(k = 0; k < 8; k++)
